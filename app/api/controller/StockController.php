@@ -7,8 +7,16 @@ use app\admin\model\StockStructure;
 use app\admin\model\StockStructureTime;
 use app\api\basic\Base;
 use EasyWeChat\MiniApp\Application;
+use Endroid\QrCode\Color\Color;
+use Endroid\QrCode\Encoding\Encoding;
+use Endroid\QrCode\ErrorCorrectionLevel;
+use Endroid\QrCode\QrCode;
+use Endroid\QrCode\RoundBlockSizeMode;
+use Endroid\QrCode\Writer\PngWriter;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use plugin\admin\app\model\Option;
+use plugin\admin\app\model\User;
 use support\Request;
 
 class StockController extends Base
@@ -62,25 +70,43 @@ class StockController extends Base
         $time = $request->post('time'); #期限:0=1个月,1=2个月,2=3个月,3=六个月
         $structure = $request->post('structure');#结构:0=100call
         $broker = $request->post('broker');#报价方 0=中信
+        $h5 = $request->isTerminal('h5');
+        if ($h5){
+            // 使用构建器创建 QR Code
+            $writer = new PngWriter();
+            $qrCode = new QrCode(
+                data: '',
+                encoding: new Encoding('UTF-8'),
+                errorCorrectionLevel: ErrorCorrectionLevel::Low,
+                size: 100,
+                margin: 10,
+                roundBlockSizeMode: RoundBlockSizeMode::Margin,
+                foregroundColor: new Color(0, 0, 0),
+                backgroundColor: new Color(255, 255, 255)
+            );
+            $base64 = $writer->write($qrCode)->getDataUri();
+        }else{
 
-        $app = new Application(config('wechatmini'));
-        try {
-            $response = $app->getClient()->postJson('/wxa/getwxacodeunlimit', [
-                'scene' => json_encode([
-                    'stock_id' => $stock_id,
-                    'time' => $time,
-                    'broker' => $broker,
-                    'structure' => $structure,
-                ]),
-                'page' => 'pages/login',
-                'width' => 280,
-                'check_path' => !config('app.debug'),
-            ]);
-            $response = base64_encode($response->getContent());
-        } catch (\Throwable $e) {
-            // 失败
-            return $this->fail($e->getMessage());
+            try {
+                $app = new Application(config('wechatmini'));
+                $response = $app->getClient()->postJson('/wxa/getwxacodeunlimit', [
+                    'scene' => json_encode([
+                        'stock_id' => $stock_id,
+                        'time' => $time,
+                        'broker' => $broker,
+                        'structure' => $structure,
+                    ]),
+                    'page' => 'pages/home',
+                    'width' => 280,
+                    'check_path' => !config('app.debug'),
+                ]);
+                $base64 = "data:image/png;base64,".base64_encode($response->getContent());
+            } catch (\Throwable $e) {
+                // 失败
+                return $this->fail($e->getMessage());
+            }
         }
+
 
         $getTypeByStockStructure = (new StockStructure)->getTypeList();
         $arr_structure = explode(',', $structure);
@@ -112,7 +138,7 @@ class StockController extends Base
             'structure' => implode('|', $string_structure),
             'time' => implode('|', $string_time),
             'broker' => implode('|', $string_broker),
-            'uri' => $response
+            'uri' => $base64
         ];
 
         if ($type == 1){

@@ -17,7 +17,11 @@ use Webman\Route;
 
 
 Route::fallback(function () {
-    throw new \Tinywan\ExceptionHandler\Exception\RouteNotFoundException();
+    if (request()->header('accept') == 'application/json'){
+        throw new \Tinywan\ExceptionHandler\Exception\RouteNotFoundException();
+    }else{
+        return not_found();
+    }
 });
 
 

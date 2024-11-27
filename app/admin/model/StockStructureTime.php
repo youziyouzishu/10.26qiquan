@@ -44,7 +44,7 @@ class StockStructureTime extends Base
         'structure_id', 'type', 'broker', 'value'
     ];
 
-    protected $appends = ['price', 'type_text', 'broker_text'];
+    protected $appends = ['price', 'type_text', 'broker_text','value_text'];
 
     public function getPriceAttribute()
     {
@@ -58,6 +58,12 @@ class StockStructureTime extends Base
             default:
                 return 0;
         }
+    }
+
+    function getValueTextAttribute($value)
+    {
+        $value = is_numeric($this->value) ? $this->value : 0;
+        return $value * 100;
     }
 
 
