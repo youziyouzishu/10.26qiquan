@@ -1,0 +1,135 @@
+<?php
+
+namespace app\api\controller;
+
+use app\admin\model\Stock;
+use app\admin\model\StockStructure;
+use app\admin\model\StockStructureTime;
+use app\api\basic\Base;
+use EasyWeChat\MiniApp\Application;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use support\Request;
+
+class StockController extends Base
+{
+
+
+
+    function getList(Request $request)
+    {
+        $rows = StockStructureTime::with(['structure.stock'])->orderByDesc('weigh')->paginate()->items();
+        return $this->success('成功', $rows);
+    }
+    
+    function getStockByKeyWord(Request $request)
+    {
+        $keyword = $request->post('keyword');
+        $rows = Stock::where(function ($query) use ($keyword) {
+            $query->where('name', 'like', "%{$keyword}%")->orWhere('code', 'like', "%{$keyword}%");
+        })->get();
+        return $this->success('成功', $rows);
+    }
+
+    function inquiryPprice(Request $request)
+    {
+        $stock_id = $request->post('stock_id');
+        $time = $request->post('time'); #期限:0=1个月,1=2个月,2=3个月,3=六个月
+        $structure = $request->post('structure');#结构:0=100call
+        $broker = $request->post('broker');#报价方 0=中信
+        $time = explode(',', $time);
+        $structure = explode(',', $structure);
+        $broker = explode(',', $broker);
+
+
+        $stock = Stock::with(['structure' => function (HasMany $many) use ($structure, $time, $broker) {
+            $many->with(['time' => function (HasMany $many) use ($time, $broker) {
+                $many->whereIn('type', $time)->when(!empty($broker) || $broker == 0, function (Builder $query) use ($broker) {
+                    $query->whereIn('broker', $broker);
+                });
+            }])->whereIn('type', $structure);
+        }])->find($stock_id);
+        if (!$stock) {
+            return $this->fail('标的不存在');
+        }
+        return $this->success('成功', $stock);
+    }
+
+    function share(Request $request)
+    {
+        $type = $request->post('type');#0=分享指令 1=分享报价
+        $stock_id = $request->post('stock_id');
+        $time = $request->post('time'); #期限:0=1个月,1=2个月,2=3个月,3=六个月
+        $structure = $request->post('structure');#结构:0=100call
+        $broker = $request->post('broker');#报价方 0=中信
+
+        $app = new Application(config('wechatmini'));
+        try {
+            $response = $app->getClient()->postJson('/wxa/getwxacodeunlimit', [
+                'scene' => json_encode([
+                    'stock_id' => $stock_id,
+                    'time' => $time,
+                    'broker' => $broker,
+                    'structure' => $structure,
+                ]),
+                'page' => 'pages/login',
+                'width' => 280,
+                'check_path' => !config('app.debug'),
+            ]);
+            $response = base64_encode($response->getContent());
+        } catch (\Throwable $e) {
+            // 失败
+            return $this->fail($e->getMessage());
+        }
+
+        $getTypeByStockStructure = (new StockStructure)->getTypeList();
+        $arr_structure = explode(',', $structure);
+        $string_structure = [];
+        foreach ($arr_structure as $v){
+            $string_structure[] = $getTypeByStockStructure[$v];
+        }
+        $getTypeByStockStructureTime = (new StockStructureTime)->getTypeList();
+        $arr_time = explode(',', $time);
+        $string_time = [];
+        foreach ($arr_time as $v){
+            $string_time[] = $getTypeByStockStructureTime[$v];
+        }
+        $getBorkerByStockStructureTime = (new StockStructureTime)->getBrokerList();
+        $arr_broker = explode(',', $broker);
+        $string_broker = [];
+        foreach ($arr_broker as $v){
+            $string_broker[] = $getBorkerByStockStructureTime[$v];
+        }
+
+        $stock = Stock::find($stock_id);
+        if (!$stock) {
+            return $this->fail('标的不存在');
+        }
+        $data = [
+            'name' => $stock->name,
+            'code' => $stock->code . '.' . $stock->bourse,
+            'type' => '香草期权',
+            'structure' => implode('|', $string_structure),
+            'time' => implode('|', $string_time),
+            'broker' => implode('|', $string_broker),
+            'uri' => $response
+        ];
+
+        if ($type == 1){
+            //分享报价
+            $structure = StockStructure::where('stock_id',$stock->id)->where('type', $structure)->first();
+            $time = StockStructureTime::where('structure_id', $structure->id)->where('type',$time)->first();
+            $data['price'] = $time->price;
+        }
+        return $this->success('成功', $data);
+    }
+
+
+
+
+
+
+
+
+
+}
