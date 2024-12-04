@@ -22,7 +22,7 @@
 <!--                        </div>-->
 <!--                    </div>-->
                     
-                    <div class="layui-form-item">
+                    <div class="layui-form-item layui-hide">
                         <label class="layui-form-label">类型</label>
                         <div class="layui-input-block">
                             <div name="type" id="type" value="" ></div>
@@ -78,16 +78,16 @@
                     <div class="layui-form-item yield_amount">
                         <label class="layui-form-label">收益</label>
                         <div class="layui-input-block">
-                            <input type="text" min="0" name="yield_amount" value="" class="layui-input">
+                            <input type="text" min="0" id="yield_amount" name="yield_amount" value="" class="layui-input">
                         </div>
                     </div>
                     
-                    <div class="layui-form-item yield_rate">
-                        <label class="layui-form-label">收益率</label>
-                        <div class="layui-input-block">
-                            <input type="text" name="yield_rate" value="" class="layui-input">
-                        </div>
-                    </div>
+<!--                    <div class="layui-form-item yield_rate">-->
+<!--                        <label class="layui-form-label">收益率</label>-->
+<!--                        <div class="layui-input-block">-->
+<!--                            <input type="text" name="yield_rate" value="" class="layui-input">-->
+<!--                        </div>-->
+<!--                    </div>-->
                     
 <!--                    <div class="layui-form-item">-->
 <!--                        <label class="layui-form-label">认购规模</label>-->
@@ -96,7 +96,7 @@
 <!--                        </div>-->
 <!--                    </div>-->
                     
-                    <div class="layui-form-item">
+                    <div class="layui-form-item layui-hide">
                         <label class="layui-form-label">行权类型</label>
                         <div class="layui-input-block">
                             <div name="sell_type" id="sell_type" value="" ></div>
@@ -113,7 +113,7 @@
                     <div class="layui-form-item price">
                         <label class="layui-form-label">买入价格</label>
                         <div class="layui-input-block">
-                            <input type="text" name="price" value="" class="layui-input">
+                            <input type="text" id="price" name="price" value="" class="layui-input">
                         </div>
                     </div>
 
@@ -255,9 +255,10 @@
                         layui.use(["jquery", "xmSelect"], function() {
                             let value = layui.$("#status").attr("value");
                             let sell_type = layui.$("#sell_type").attr("value");
+                            let price = layui.$("#price").attr("value");
                             let type = layui.$("#type").attr("value");
+                            let yield_amount = layui.$("#yield_amount").attr("value");
                             let initValue = value ? value.split(",") : [];
-
                             let data = [
                                 {"value": "0", "name": "认购中"},
                                 {"value": "1", "name": "认购成功"},
@@ -273,13 +274,15 @@
                             let dataName =["认购中","认购成功","认购失败","行权中","完结","撤销认购中","行权成功","撤销认购","行权撤销中"];
 
                             if (value === '0'){
-                                data = [{"value": "1", "name": "认购成功"},{"value": "2", "name": "认购失败"}];
+                                data = [{"value": "0", "name": "认购中"},{"value": "1", "name": "认购成功"},{"value": "2", "name": "认购失败"}];
                             }else if (value === '3'){
-                                data = [{"value": "6", "name": "行权成功"},{"value": "1", "name": "行权失败"}];
+                                data = [{"value": "3", "name": "行权中"},{"value": "6", "name": "行权成功"},{"value": "1", "name": "行权失败"}];
                             }else if (value === '5'){
-                                data = [{"value": "7", "name": "撤销成功"},{"value": "0", "name": "撤销失败"}];
+                                data = [{"value": "5", "name": "撤销认购中"},{"value": "7", "name": "撤销成功"},{"value": "0", "name": "撤销失败"}];
                             }else if (value === '8'){
-                                data = [{"value": "1", "name": "撤销成功"},{"value": "3", "name": "撤销失败"}];
+                                data = [{"value": "8", "name": "行权撤销中"},{"value": "1", "name": "撤销成功"},{"value": "3", "name": "撤销失败"}];
+                            }else if (value === '6') {
+                                data = [{"value": "6", "name": "行权成功"},{"value": "4", "name": "完结"}];
                             }else{
                                 data = [{"value": value, "name": dataName[value]}];
                             }
@@ -305,7 +308,7 @@
                                             $(".reason").addClass("layui-hide")
                                         }
 
-                                        if (value === "1"&&type === "0"){
+                                        if (value === "1" && type === "0" && price==='0.00'){
                                             $(".price").removeClass("layui-hide")
                                         }else{
                                             $(".price").addClass("layui-hide")
@@ -317,12 +320,12 @@
                                             $(".sell_price").addClass("layui-hide")
                                         }
 
-                                        if (value === "4"){
+                                        if (value === "4"&& yield_amount ==='0.00'){
                                             $(".yield_amount").removeClass("layui-hide")
-                                            $(".yield_rate").removeClass("layui-hide")
+
                                         }else{
                                             $(".yield_amount").addClass("layui-hide")
-                                            $(".yield_rate").addClass("layui-hide")
+
                                         }
                                     }
                                 },

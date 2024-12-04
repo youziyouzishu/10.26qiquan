@@ -1,7 +1,7 @@
 <?php
 return [
-    'app_id' => 'wx3cf0f39249eb0exx',
-    'secret' => 'f1c242f4f28f735d4687abb469072axx',
+    'app_id' => 'wxd1eebec8aea88c58',
+    'secret' => 'a871dfc103d509f61263d7f0abe5a812',
     'token' => 'easywechat',
     'aes_key' => '', // 明文模式请勿填写 EncodingAESKey
 

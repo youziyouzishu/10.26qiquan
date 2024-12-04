@@ -3,6 +3,7 @@
 namespace app\admin\model;
 
 use GuzzleHttp\Client;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use plugin\admin\app\common\Util;
 use plugin\admin\app\model\Base;
 
@@ -180,6 +181,7 @@ class Sms extends Base
         self::where(['mobile' => $mobile, 'event' => $event])->delete();
         return true;
     }
-    
+
+
     
 }

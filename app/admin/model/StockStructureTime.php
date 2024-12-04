@@ -22,6 +22,7 @@ use plugin\admin\app\model\Base;
  * @property-read mixed $price
  * @property-read mixed $type_text
  * @property int $weigh 权重
+ * @property-read mixed $value_text
  * @mixin \Eloquent
  */
 class StockStructureTime extends Base
@@ -63,7 +64,7 @@ class StockStructureTime extends Base
     function getValueTextAttribute($value)
     {
         $value = is_numeric($this->value) ? $this->value : 0;
-        return $value * 100;
+        return round($value * 100,2);
     }
 
 

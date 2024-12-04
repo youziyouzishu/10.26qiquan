@@ -60,26 +60,37 @@ class SubscribeController extends Base
         $holdlist = Subscribe::with(['stock'])->where(['user_id' => $request->user_id])->whereIn('status', [0, 1, 3, 5, 6, 7, 8])->get()->each(function ($item) use (&$total_yield_amount) {
 
             $stockinfo = Tool::getStockPrice($item->stock->code);
-            $item->market_price = $stockinfo->p;
-            $difference_sell_price = 0;
-            if ($item->status == 6) {
-                $difference_sell_price = $stockinfo->p - $item->sell_price;
-            }
-            if ($item->status == 1) {
-                $increase = ($stockinfo->p - $item->price) / $item->price;#涨幅
+            $market_price = round($stockinfo->p,2);
+            $increase_rate = 0;
+            if ($item->status >= 1) {
+                if ($item->status == 6){
+                    $market_price = $item->sell_price;
+                }
+                $increase = ($market_price - $item->price) / $item->price;#涨幅
+                $increase_rate = round($increase * 100,2) ;
+
                 $yield_amount = $increase * $item->scale_amount - $item->pay_amount;#盈亏
                 if ($yield_amount < ($item->pay_amount * -1)) {
                     $yield_amount = $item->pay_amount * -1;
                 }
-                $total_yield_amount += $yield_amount;
+                $total_yield_amount += round($yield_amount,2);
             }
-            $item->difference_sell_price = $difference_sell_price;#距离行权价
+            $item->setAttribute('market_price',$market_price);
+            $item->setAttribute('increase_rate', $increase_rate);
         });
         #完结列表
-        $overlist = Subscribe::with(['stock'])->where(['user_id' => $request->user_id])->whereIn('status', [2, 4])->get();
+        $overlist = Subscribe::with(['stock'])->where(['user_id' => $request->user_id])->whereIn('status', [2, 4])->get()->each(function ($item){
+            $increase_rate = 0;
+            if ($item->status == 4){
+                $market_price = $item->sell_price;
+                $increase = ($market_price - $item->price) / $item->price;#涨幅
+                $increase_rate = round($increase * 100,2) ;
+            }
+            $item->setAttribute('increase_rate', $increase_rate);
+        });
 
 
-        $data['total_scale_amount'] = $holdlist->sum('scale_amount');#存续规模
+        $data['total_scale_amount'] = $holdlist->sum('pay_amount');#存续规模
         $data['total_yield_amount'] = $total_yield_amount;#浮动收益
         $data['history_yield_amount'] = $overlist->sum('yield_amount');#历史净收益
         $data['holdlist'] = $holdlist;
@@ -96,25 +107,38 @@ class SubscribeController extends Base
             return $this->fail('数据不存在');
         }
         $stockinfo = Tool::getStockPrice($row->stock->code);
-        $total_yield_amount = 0;  #浮动收益
-        $total_yield_rate = 0;#浮动净收益率
-        if ($row->status == 1) {
-            $increase = ($stockinfo->p - $row->price) / $row->price;#涨幅
-            $yield_amount = $increase * $row->scale_amount - $row->pay_amount;#盈亏
-            if ($yield_amount < ($row->pay_amount * -1)) {
-                $yield_amount = $row->pay_amount * -1;
+        $market_price = $stockinfo->p;
+        $increase_rate = 0;
+        if (in_array($row->status, [0, 1, 3, 5, 6, 7, 8])){
+            //在持
+            if ($row->status == 6){
+                $market_price = $row->sell_price;
             }
-            $total_yield_amount = $yield_amount;
-            $total_yield_rate = ($total_yield_amount - $row->pay_amount) / $row->pay_amount;
-            $start_time = Carbon::create($row->start_time);
-            $end_time = Carbon::create($row->end_time);
-            $diff_time = $start_time->diffInDays($end_time);
-            $end_time_text = '剩余' . $diff_time . '个自然日';
-            $row->setAttribute('end_time_text', $end_time_text);
+            $increase = ($market_price - $row->price) / $row->price;
+            if ($row->status == 0){
+                #涨幅
+                $yield_amount = $increase * $row->scale_amount - $row->pay_amount;
+                $row->yield_amount = round($yield_amount,2);
+                $row->yield_rate = $increase_rate;
+            }else{
+                #涨幅
+                $increase_rate = round($increase * 100,2) ;
+                $yield_amount = $increase * $row->scale_amount - $row->pay_amount;
+                if ($yield_amount < ($row->pay_amount * -1)) {
+                    $yield_amount = $row->pay_amount * -1;
+                }
+                $row->yield_rate = $increase_rate;
+                $row->yield_amount = round($yield_amount,2);
+            }
+        }else{
+            //结束
+            if ($row->status == 4){
+                $market_price = $row->sell_price;
+                $increase = ($market_price - $row->price) / $row->price;#涨幅
+                $increase_rate = round($increase * 100,2) ;
+            }
         }
-        $row->setAttribute('total_yield_amount', $total_yield_amount);
-        $row->setAttribute('total_yield_rate', $total_yield_rate);
-
+        $row->setAttribute('increase_rate', $increase_rate);
         return $this->success('成功', $row);
     }
 

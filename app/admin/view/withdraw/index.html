@@ -14,12 +14,12 @@
             <div class="layui-card-body">
                 <form class="layui-form top-search-from">
 
-                    <div class="layui-form-item">
-                        <label class="layui-form-label">主键</label>
-                        <div class="layui-input-block">
-                            <input type="number" name="id" value="" class="layui-input">
-                        </div>
-                    </div>
+<!--                    <div class="layui-form-item">-->
+<!--                        <label class="layui-form-label">主键</label>-->
+<!--                        <div class="layui-input-block">-->
+<!--                            <input type="number" name="id" value="" class="layui-input">-->
+<!--                        </div>-->
+<!--                    </div>-->
 
                     <div class="layui-form-item">
                         <label class="layui-form-label">所属用户</label>
@@ -53,16 +53,16 @@
                         </div>
                     </div>
 
-                    <div class="layui-form-item">
-                        <label class="layui-form-label">创建时间</label>
-                        <div class="layui-input-block">
-                            <div class="layui-input-block" id="created_at">
-                                <input type="text" autocomplete="off" name="created_at[]" id="created_at-date-start" class="layui-input inline-block" placeholder="开始时间">
-                                -
-                                <input type="text" autocomplete="off" name="created_at[]" id="created_at-date-end" class="layui-input inline-block" placeholder="结束时间">
-                            </div>
-                        </div>
-                    </div>
+<!--                    <div class="layui-form-item">-->
+<!--                        <label class="layui-form-label">创建时间</label>-->
+<!--                        <div class="layui-input-block">-->
+<!--                            <div class="layui-input-block" id="created_at">-->
+<!--                                <input type="text" autocomplete="off" name="created_at[]" id="created_at-date-start" class="layui-input inline-block" placeholder="开始时间">-->
+<!--                                - -->
+<!--                                <input type="text" autocomplete="off" name="created_at[]" id="created_at-date-end" class="layui-input inline-block" placeholder="结束时间">-->
+<!--                            </div>-->
+<!--                        </div>-->
+<!--                    </div>-->
 
                     <div class="layui-form-item layui-inline">
                         <label class="layui-form-label"></label>
@@ -100,7 +100,7 @@
 
         <!-- 表格行工具栏 -->
         <script type="text/html" id="table-bar">
-            <button class="pear-btn pear-btn-xs tool-btn"  lay-event="edit" permission="admin.withdraw.update">编辑</button>
+            <button class="pear-btn pear-btn-xs tool-btn {{ d.status == 0 ? '' : 'layui-hide' }}"  lay-event="edit" permission="admin.withdraw.update">编辑</button>
             <button class="pear-btn pear-btn-xs tool-btn" lay-event="remove" permission="admin.withdraw.delete">删除</button>
         </script>
 
@@ -119,29 +119,34 @@
             const INSERT_URL = "/admin/withdraw/insert";
             const UPDATE_URL = "/admin/withdraw/update";
 
-            // 字段 所属用户 user_id
+            // 字段 用户 user_id
             layui.use(["jquery", "xmSelect", "popup"], function() {
-                layui.$.ajax({
-                    url: "/app/admin/user/select?format=select",
-                    dataType: "json",
-                    success: function (res) {
-                        let value = layui.$("#user_id").attr("value");
-                        let initValue = value ? value.split(",") : [];
-                        layui.xmSelect.render({
-                            el: "#user_id",
-                            name: "user_id",
-                            initValue: initValue,
-                            filterable: true,
-                            data: res.data,
-                            model: {"icon":"hidden","label":{"type":"text"}},
-                            clickClose: true,
-                            radio: true,
+                layui.xmSelect.render({
+                    el: '#user_id',
+                    name: "user_id",
+                    //配置搜索
+                    filterable: true,
+                    //配置远程分页
+                    clickClose: true,
+                    radio: true,
+                    remoteSearch:true,
+                    searchTips:'手机号搜索',
+                    //数据处理
+                    remoteMethod: function(val, cb, show, pageIndex){
+                        //val: 搜索框的内容, 不开启搜索默认为空, cb: 回调函数, show: 当前下拉框是否展开, pageIndex: 当前第几页
+                        layui.$.ajax({
+                            url: "/app/admin/user/select?format=select",
+                            dataType: "json",
+                            data: {
+                                mobile: val
+                            },
+                            success: function (res) {
+                                //回调需要两个参数, 第一个: 数据数组, 第二个: 总页码
+                                cb(res.data)
+                            }
                         });
-                        if (res.code) {
-                            layui.popup.failure(res.msg);
-                        }
                     }
-                });
+                })
             });
 
             // 字段 状态:0=待审核,1=审核通过,2=审核不通过 status
@@ -211,6 +216,7 @@
 						title: "主键",align: "center",
 						field: "id",
 						sort: true,
+                        hide:true
 					},{
 						title: "所属用户",align: "center",
 						field: "user_id",
@@ -251,6 +257,9 @@
 						title: "入金日期",align: "center",
 						field: "day",
 					},{
+                        title: "审核时间",align: "center",
+                        field: "check_time",
+                    },{
 						title: "类型",align: "center",
 						field: "type",
 						templet: function (d) {
@@ -266,9 +275,11 @@
 						title: "创建时间",align: "center",
 						field: "created_at",
 						sort: true,
+                        hide:true
 					},{
 						title: "更新时间",align: "center",
 						field: "updated_at",
+                        hide:true
 					},{
 						title: "操作",
 						toolbar: "#table-bar",

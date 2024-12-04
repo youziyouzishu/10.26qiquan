@@ -7,6 +7,7 @@ use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
 use PhpOffice\PhpSpreadsheet\Reader\Csv;
 use PhpOffice\PhpSpreadsheet\Reader\Xls;
 use PhpOffice\PhpSpreadsheet\Reader\Xlsx;
+use support\Cache;
 use support\Db;
 use support\Request;
 use support\Response;
@@ -92,9 +93,13 @@ class StockStructureTimeController extends Crud
      */
     function imported(Request $request)
     {
+//        $lock = Cache::get('imported');
+//        if ($lock == '1'){
+//            return $this->fail('上个文件正在导入中，请稍后再试');
+//        }
+//        Cache::set('imported', '1');
         $file = current($request->file());
         $ext = $file->getUploadExtension();
-
         $filePath = $file->getRealPath();
         //实例化reader
         if (!in_array($ext, ['xls', 'xlsx'])) {
@@ -152,7 +157,12 @@ class StockStructureTimeController extends Crud
             }
             DB::connection('plugin.admin.mysql')->beginTransaction();
             try {
+                // 使用 array_filter 过滤掉 a 为 null 的元素
+                $insert = array_filter($insert, function($item) {
+                    return $item['code'] !== null;
+                });
                 foreach ($insert as $item) {
+
                     list($code, $bourse) = explode('.', $item['code']);
                     $stock = Stock::firstOrCreate(['code' => $code], [
                         'name' => $item['name'],
@@ -175,8 +185,10 @@ class StockStructureTimeController extends Crud
                 throw $e;
             }
         } catch (\Throwable $exception) {
+//            Cache::set('imported','0');
             return $this->fail($exception->getMessage());
         }
+//        Cache::set('imported','0');
         return $this->success('导入成功');
     }
 

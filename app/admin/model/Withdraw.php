@@ -21,6 +21,8 @@ use plugin\admin\app\model\Base;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Withdraw query()
  * @property int $type 类型:0=入金,1=出金
  * @property int $admin_id 所属管理员
+ * @property string $memo 备注
+ * @property string|null $check_time 审核时间
  * @mixin \Eloquent
  */
 class Withdraw extends Base
@@ -40,7 +42,7 @@ class Withdraw extends Base
     protected $primaryKey = 'id';
 
     protected $fillable = [
-        'user_id','amount','image','status','reason','day','type','admin_id'
+        'user_id','amount','image','status','reason','day','type','admin_id','memo'
     ];
 
 

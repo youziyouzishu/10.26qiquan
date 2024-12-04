@@ -52,17 +52,18 @@ class WithdrawController extends Crud
             $user_id = $request->post('user_id');
             $type = $request->post('type');
             $admin = admin();
-            $post['admin_id'] = $admin['id'];
+            $data['admin_id'] = $admin['id'];
 
             if (!in_array(3,$admin['roles'])){
                 //管理员和财务 直接无需审核
                 if ($type == 0){
                     //入金操作
-                    $post['status'] = 1;
+                    $data['status'] = 1;
+                    $data['day'] = date('Y-m-d');
                     User::score($amount,$user_id,'入金','money');
                 }
             }
-            $request->setParams('post',$post);
+            $request->setParams('post',$data);
             return parent::insert($request);
         }
         return view('withdraw/insert');
@@ -80,9 +81,12 @@ class WithdrawController extends Crud
             $id = $request->post('id');
             $row = $this->model->find($id);
             $status = $request->post('status');
-            if ($row->status == 0){
+            $data = [];
+            if ($row->status == 0&&$status != 0){
+                $data['check_time'] = date('Y-m-d H:i:s');
                 if ($row->type == 0&&$status == 1){
                     //入金 审核通过 增加余额
+                    $data['day'] = date('Y-m-d');
                     User::score($row->amount,$row->user_id,'入金','money');
                 }
 
@@ -90,8 +94,8 @@ class WithdrawController extends Crud
                     //出金 审核不通过 退还余额余额
                     User::score($row->amount,$row->user_id,'出金失败退还余额','money');
                 }
-
             }
+            $request->setParams('post',$data);
             return parent::update($request);
         }
         return view('withdraw/update');

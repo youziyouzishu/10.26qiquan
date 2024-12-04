@@ -3,6 +3,7 @@
 namespace app\admin\controller;
 
 use app\admin\model\StockStructureTime;
+use app\admin\model\Withdraw;
 use Carbon\Carbon;
 use plugin\admin\app\model\User;
 use support\Request;
@@ -105,9 +106,21 @@ class SubscribeController extends Crud
             $row = $this->model->find($id);
             $status = $request->post('status');
             $yield_amount = $request->post('yield_amount');
+
             if ($row->status == 6 && $status == 4) {
                 //行权成功->完结
-                User::score($yield_amount,$row->user_id,'期权收益收益','money');
+                $yield_rate =  ($yield_amount - $row->pay_amount) / $row->pay_amount * 100;
+                $request->setParams('post',[
+                    'yield_rate'=>$yield_rate
+                ]);
+
+                Withdraw::create([
+                    'user_id' => $row->user_id,
+                    'amount' => $yield_amount,
+                    'type' => 0,
+                    'memo'=>'期权结算收益',
+                ]);
+                User::score($yield_amount,$row->user_id,'期权收益','money');
             }
             if ($row->status == 0 && $status == 1){
                 //认购中->认购成功
@@ -126,26 +139,27 @@ class SubscribeController extends Crud
                 //加入队列  #自动平权
                 $queue = 'subscribe';
                 $data = ['id' => $row->id, 'event' => 'sell'];
-
                 // 获取一个月后的结束时间戳
                 $month_later_timestamp = $end_time->endOfDay()->timestamp;
-
                 // 获取当前日期和时间
                 $now_timestam = Carbon::now()->timestamp;
-
                 // 计算时间差
                 $time_difference = $month_later_timestamp - $now_timestam;
-
                 Client::send($queue, $data, $time_difference);
-
                 $request->setParams('post',[
                     'start_time'=>$start_time->toDateString(),
                     'end_time'=>$end_time->toDateString()
                 ]);
             }
             if ($row->status == 8&&$status == 1){
-                #申请撤销行权->撤销成功
-                $request->setParams('post',['cancel_time'=>date('Y-m-d H:i:s')]);
+                #申请撤销行权->认购成功
+                $request->setParams('post',[
+                    'cancel_time'=>date('Y-m-d H:i:s'),
+                    'sell_time'=>null,
+                    'sell_type'=>0,
+                    'sell_price'=>0
+                ]);
+
             }
             return parent::update($request);
         }

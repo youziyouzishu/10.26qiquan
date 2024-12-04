@@ -17,16 +17,17 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use plugin\admin\app\model\Option;
 use plugin\admin\app\model\User;
+use support\Log;
 use support\Request;
 
 class StockController extends Base
 {
 
-
+    protected $noNeedLogin = ['share'];
 
     function getList(Request $request)
     {
-        $rows = StockStructureTime::with(['structure.stock'])->orderByDesc('weigh')->paginate()->items();
+        $rows = StockStructureTime::with(['structure.stock'])->where(['type' => 1])->orderByDesc('weigh')->paginate()->items();
         return $this->success('成功', $rows);
     }
     
@@ -42,7 +43,7 @@ class StockController extends Base
     function inquiryPprice(Request $request)
     {
         $stock_id = $request->post('stock_id');
-        $time = $request->post('time'); #期限:0=1个月,1=2个月,2=3个月,3=六个月
+        $time = $request->post('time',''); #期限:0=1个月,1=2个月,2=3个月,3=六个月
         $structure = $request->post('structure');#结构:0=100call
         $broker = $request->post('broker');#报价方 0=中信
         $time = explode(',', $time);
@@ -52,7 +53,9 @@ class StockController extends Base
 
         $stock = Stock::with(['structure' => function (HasMany $many) use ($structure, $time, $broker) {
             $many->with(['time' => function (HasMany $many) use ($time, $broker) {
-                $many->whereIn('type', $time)->when(!empty($broker) || $broker == 0, function (Builder $query) use ($broker) {
+                $many->when(!empty($time),function ($query)use($time){
+                    $query->whereIn('type', $time);
+                })->when(!empty($broker) || $broker == 0, function (Builder $query) use ($broker) {
                     $query->whereIn('broker', $broker);
                 });
             }])->whereIn('type', $structure);
@@ -75,7 +78,7 @@ class StockController extends Base
             // 使用构建器创建 QR Code
             $writer = new PngWriter();
             $qrCode = new QrCode(
-                data: '',
+                data: 'https://1026qiquan.62.hzgqapp.com/web/index.html',
                 encoding: new Encoding('UTF-8'),
                 errorCorrectionLevel: ErrorCorrectionLevel::Low,
                 size: 100,
@@ -89,17 +92,13 @@ class StockController extends Base
 
             try {
                 $app = new Application(config('wechatmini'));
-                $response = $app->getClient()->postJson('/wxa/getwxacodeunlimit', [
-                    'scene' => json_encode([
-                        'stock_id' => $stock_id,
-                        'time' => $time,
-                        'broker' => $broker,
-                        'structure' => $structure,
-                    ]),
+                $data = [
+                    'scene' => '1',
                     'page' => 'pages/home',
                     'width' => 280,
                     'check_path' => !config('app.debug'),
-                ]);
+                ];
+                $response = $app->getClient()->postJson('/wxa/getwxacodeunlimit', $data);
                 $base64 = "data:image/png;base64,".base64_encode($response->getContent());
             } catch (\Throwable $e) {
                 // 失败
@@ -115,11 +114,15 @@ class StockController extends Base
             $string_structure[] = $getTypeByStockStructure[$v];
         }
         $getTypeByStockStructureTime = (new StockStructureTime)->getTypeList();
-        $arr_time = explode(',', $time);
+
+        $arr_time = empty($time)?[]:explode(',', $time);
+
         $string_time = [];
+
         foreach ($arr_time as $v){
             $string_time[] = $getTypeByStockStructureTime[$v];
         }
+
         $getBorkerByStockStructureTime = (new StockStructureTime)->getBrokerList();
         $arr_broker = explode(',', $broker);
         $string_broker = [];
@@ -136,7 +139,7 @@ class StockController extends Base
             'code' => $stock->code . '.' . $stock->bourse,
             'type' => '香草期权',
             'structure' => implode('|', $string_structure),
-            'time' => implode('|', $string_time),
+            'time' => empty($string_time)?'无':implode('|', $string_time),
             'broker' => implode('|', $string_broker),
             'uri' => $base64
         ];

@@ -13,7 +13,7 @@ class Tool
         $ret = Cache::get($key);
         if (!$ret){
             $client = new Client;
-            $ret = $client->get("http://api.biyingapi.com/zs/sssj/{$code}/71936A19-1FC5-4CB5-9F0A-D705E383E319");
+            $ret = $client->get("http://api.biyingapi.com/zs/sssj/{$code}/62C9F6C1-5B30-4428-A7DD-BE72AC65ADE5");
             $ret = $ret->getBody()->getContents();
             Cache::set($key,$ret,5);
         }

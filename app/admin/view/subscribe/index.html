@@ -269,16 +269,9 @@
 						sort: true,
 					},{
 						title: "用户",align: "center",
-						field: "user_id",
-						templet: function (d) {
-							let field = "user_id";
-							if (typeof d[field] == "undefined") return "";
-							let items = [];
-							layui.each((d[field] + "").split(","), function (k , v) {
-								items.push(apiResults[field][v] || v);
-							});
-							return util.escape(items.join(","));
-						}
+                        templet: function (d) {
+                            return d.user.nickname
+                        }
 					},{
 						title: "类型",align: "center",
 						field: "type",
@@ -380,6 +373,7 @@
                     },{
                         title: "行权次数",align: "center",
                         field: "sell_num",
+                        hide:true
                     },{
 						title: "创建时间",align: "center",
 						field: "created_at",
@@ -423,9 +417,7 @@
 				
 				// 获取表格中下拉或树形组件数据
 				let apis = [];
-				apis.push(["user_id", "/app/admin/user/select?format=select"]);
 				let apiResults = {};
-				apiResults["user_id"] = [];
 				apiResults["type"] = ["市价认购","限价认购"];
 				apiResults["structure"] = ["100call"];
 				apiResults["time"] = ["1个月","2个月","3个月","六个月"];

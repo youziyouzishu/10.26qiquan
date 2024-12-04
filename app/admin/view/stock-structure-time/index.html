@@ -167,6 +167,7 @@
 					},{
 						title: "主键",align: "center",
 						field: "id",
+                        hide:true
 					},{
 						title: "所属标的",align: "center",
 						templet: function (d) {
@@ -229,10 +230,6 @@
 				    table.render({
 				        elem: "#data-table",
 				        url: SELECT_API,
-                        where:{
-                            'field':'id',
-                            'order':'desc'
-                        },
 				        page: true,
 				        cols: [cols],
 				        skin: "line",
@@ -246,19 +243,36 @@
 				        }, "filter", "print", "exports"],
 				        done: function () {
 				            layer.photos({photos: 'div[lay-id="data-table"]', anim: 5});
+
+                            layui.upload.render({
+                                elem: "#imported",
+                                accept: "file",
+                                acceptMime:"application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                                exts:"xls|xlsx",
+                                before: function () {
+                                    // 上传前显示加载层
+                                    layer.load(2); // 2 表示加载的样式，可以根据需要调整
+                                },
+                                url: "/admin/stock-structure-time/imported",
+                                done: function (res) {
+                                    // 上传完成后关闭加载层
+                                    layer.closeAll('loading');
+                                    if (!res.code){
+                                        return layui.popup.fail(res.msg);
+                                    }
+                                    return layui.popup.success(res.msg, refreshTable);
+                                },
+                                error: function () {
+                                    // 上传失败后关闭加载层
+                                    layer.closeAll('loading');
+                                    layui.popup.fail("文件上传失败");
+                                }
+                            });
+
 				        }
 				    });
 
-                    layui.upload.render({
-                        elem: "#imported",
-                        accept: "file",
-                        acceptMime:"application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                        exts:"xls|xlsx",
-                        url: "/admin/stock-structure-time/imported",
-                        done: function (res) {
-                            return layui.popup.success(res.msg, refreshTable);
-                        }
-                    });
+
 				}
 				
 				// 获取表格中下拉或树形组件数据

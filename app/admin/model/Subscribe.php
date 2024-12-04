@@ -42,6 +42,7 @@ use plugin\admin\app\model\User;
  * @property-read mixed $structure_text
  * @property-read mixed $time_text
  * @property-read mixed $type_text
+ * @property-read mixed $status_by
  * @mixin \Eloquent
  */
 class Subscribe extends Base
@@ -70,8 +71,8 @@ class Subscribe extends Base
         'status_text',
         'type_text',
         'time_text',
-        'structure_text'
-
+        'structure_text',
+        'status_by'
     ];
 
     function stock()
@@ -121,6 +122,15 @@ class Subscribe extends Base
     }
 
 
+    public function getStatusByAttribute($value)
+    {
+        $value = $value ?: ($this->status ?? '');
+        if (in_array($value,[0, 1, 3, 5, 6, 7, 8])){
+            return '目前在持';
+        }else{
+            return '历史交割';
+        }
+    }
 
 
 
