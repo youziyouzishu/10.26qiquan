@@ -57,7 +57,7 @@ class SubscribeController extends Base
         #浮动收益
         $total_yield_amount = 0;
         #持有列表
-        $holdlist = Subscribe::with(['stock'])->where(['user_id' => $request->user_id])->whereIn('status', [0, 1, 3, 5, 6, 7, 8])->get()->each(function ($item) use (&$total_yield_amount) {
+        $holdlist = Subscribe::with(['stock'])->where(['user_id' => $request->user_id])->whereIn('status', [0, 1, 3, 5, 6, 7, 8])->orderByDesc('id')->get()->each(function ($item) use (&$total_yield_amount) {
 
             $stockinfo = Tool::getStockPrice($item->stock->code);
             $market_price = round($stockinfo->p,2);
@@ -79,7 +79,7 @@ class SubscribeController extends Base
             $item->setAttribute('increase_rate', $increase_rate);
         });
         #完结列表
-        $overlist = Subscribe::with(['stock'])->where(['user_id' => $request->user_id])->whereIn('status', [2, 4])->get()->each(function ($item){
+        $overlist = Subscribe::with(['stock'])->where(['user_id' => $request->user_id])->whereIn('status', [2, 4])->orderByDesc('id')->get()->each(function ($item){
             $increase_rate = 0;
             if ($item->status == 4){
                 $market_price = $item->sell_price;
@@ -106,6 +106,7 @@ class SubscribeController extends Base
         if (!$row) {
             return $this->fail('数据不存在');
         }
+        dump($row);
         $stockinfo = Tool::getStockPrice($row->stock->code);
         $market_price = $stockinfo->p;
         $increase_rate = 0;
@@ -114,14 +115,14 @@ class SubscribeController extends Base
             if ($row->status == 6){
                 $market_price = $row->sell_price;
             }
-            $increase = ($market_price - $row->price) / $row->price;
+
             if ($row->status == 0){
                 #涨幅
-                $yield_amount = $increase * $row->scale_amount - $row->pay_amount;
-                $row->yield_amount = round($yield_amount,2);
+                $row->yield_amount = 0;
                 $row->yield_rate = $increase_rate;
             }else{
                 #涨幅
+                $increase = ($market_price - $row->price) / $row->price;
                 $increase_rate = round($increase * 100,2) ;
                 $yield_amount = $increase * $row->scale_amount - $row->pay_amount;
                 if ($yield_amount < ($row->pay_amount * -1)) {

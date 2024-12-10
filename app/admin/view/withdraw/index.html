@@ -158,7 +158,7 @@
                     name: "status",
                     filterable: true,
                     initValue: initValue,
-                    data: [{"value":"0","name":"待审核"},{"value":"1","name":"审核通过"},{"value":"2","name":"审核不通过"}],
+                    data: [{"value":"0","name":"待审核"},{"value":"1","name":"审核通过"},{"value":"2","name":"审核不通过"},{"value":"3","name":"期权收益"}],
                     model: {"icon":"hidden","label":{"type":"text"}},
                     clickClose: true,
                     radio: true,
@@ -219,15 +219,8 @@
                         hide:true
 					},{
 						title: "所属用户",align: "center",
-						field: "user_id",
 						templet: function (d) {
-							let field = "user_id";
-							if (typeof d[field] == "undefined") return "";
-							let items = [];
-							layui.each((d[field] + "").split(","), function (k , v) {
-								items.push(apiResults[field][v] || v);
-							});
-							return util.escape(items.join(","));
+							return d.user.nickname
 						}
 					},{
 						title: "金额",align: "center",
@@ -314,10 +307,8 @@
 
 				// 获取表格中下拉或树形组件数据
 				let apis = [];
-				apis.push(["user_id", "/app/admin/user/select?format=select"]);
 				let apiResults = {};
-				apiResults["user_id"] = [];
-				apiResults["status"] = ["待审核","审核通过","审核不通过"];
+				apiResults["status"] = ["待审核","审核通过","审核不通过","期权结算"];
 				apiResults["type"] = ["入金","出金"];
 				let count = apis.length;
 				layui.each(apis, function (k, item) {

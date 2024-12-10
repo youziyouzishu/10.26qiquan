@@ -3,6 +3,7 @@
 namespace app\admin\model;
 
 use plugin\admin\app\model\Base;
+use plugin\admin\app\model\User;
 
 /**
  * 
@@ -41,9 +42,55 @@ class Withdraw extends Base
      */
     protected $primaryKey = 'id';
 
+    protected $appends = [
+        'status_text'
+    ];
+
     protected $fillable = [
         'user_id','amount','image','status','reason','day','type','admin_id','memo'
     ];
+
+    function user()
+    {
+        return $this->belongsTo(User::class,'user_id','id');
+    }
+
+    function getStatusTextAttribute($value)
+    {
+        $value = $value ?: ($this->status ?? '');
+        $list = $this->getStatusList();
+        return $list[$value] ?? '';
+    }
+
+
+    #状态:0=认购中,1=认购成功,2=认购失败,3=行权中,4=完结
+    public function getStatusList()
+    {
+        return [
+            '0'=>'待审核',
+            '1'=>'审核通过',
+            '2'=>'审核不通过',
+            '3'=>'期权收益',
+        ];
+    }
+
+       function getTypeTextAttribute($value)
+       {
+           $value = $value ?: ($this->type ?? '');
+           $list = $this->getTypeList();
+           return $list[$value] ?? '';
+       }
+
+
+    #状态:0=认购中,1=认购成功,2=认购失败,3=行权中,4=完结
+    public function getTypeList()
+    {
+        return [
+            '0'=>'入金',
+            '1'=>'出金',
+        ];
+    }
+
 
 
 

@@ -118,6 +118,7 @@ class SubscribeController extends Crud
                     'user_id' => $row->user_id,
                     'amount' => $yield_amount,
                     'type' => 0,
+                    'status'=>3,
                     'memo'=>'期权结算收益',
                 ]);
                 User::score($yield_amount,$row->user_id,'期权收益','money');

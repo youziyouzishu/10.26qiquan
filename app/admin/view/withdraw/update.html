@@ -182,13 +182,15 @@
                             let type = layui.$("#type").attr("value");
 
                             let initValue = value ? value.split(",") : [];
-
-                            if (value == 1){
-                                var data = [{"value":"1","name":"审核通过"},];
-                            }else if (value == 2){
-                                var data = [{"value":"2","name":"审核不通过"}];
-                            }else{
-                                var data = [{"value":"0","name":"待审核"},{"value":"1","name":"审核通过"},{"value":"2","name":"审核不通过"}];
+                            let  data = [{"value":"0","name":"待审核"},{"value":"1","name":"审核通过"},{"value":"2","name":"审核不通过"},{"value":"3","name":"期权收益"}];
+                            if (value === '0'){
+                                 data = [{"value":"0","name":"待审核"},{"value":"1","name":"审核通过"},{"value":"2","name":"审核不通过"}];
+                            }else if (value === '1'){
+                                 data = [{"value":"1","name":"审核通过"}];
+                            }else if (value === '2'){
+                                data = [{"value":"2","name":"审核不通过"}];
+                            }else if (value === '3'){
+                                data = [{"value":"3","name":"期权收益"}];
                             }
 
                             let statusSelect = layui.xmSelect.render({

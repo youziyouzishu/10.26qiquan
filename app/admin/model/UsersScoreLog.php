@@ -3,6 +3,7 @@
 namespace app\admin\model;
 
 use plugin\admin\app\model\Base;
+use plugin\admin\app\model\User;
 
 
 /**
@@ -41,6 +42,11 @@ class UsersScoreLog extends Base
     protected $fillable = [
         'user_id','score','before','after','memo','type'
     ];
+
+    function user()
+    {
+        return $this->belongsTo(User::class,'user_id','id');
+    }
 
 
 

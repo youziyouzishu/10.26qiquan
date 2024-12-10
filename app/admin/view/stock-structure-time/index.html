@@ -258,9 +258,9 @@
                                     // 上传完成后关闭加载层
                                     layer.closeAll('loading');
                                     if (!res.code){
-                                        return layui.popup.fail(res.msg);
+                                        return layui.popup.success(res.msg, refreshTable);
                                     }
-                                    return layui.popup.success(res.msg, refreshTable);
+                                    return layui.popup.failure(res.msg);
                                 },
                                 error: function () {
                                     // 上传失败后关闭加载层
