@@ -36,6 +36,8 @@ use support\Db;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User query()
  * @property string $unionid 开放平台统一标识
+ * @property int $admin_id 所属管理员ID
+ * @property-read \plugin\admin\app\model\Admin|null $admin
  * @mixin \Eloquent
  */
 class User extends Base
@@ -85,6 +87,12 @@ class User extends Base
         } catch (\Throwable $e) {
             Db::connection('plugin.admin.mysql')->rollback();
         }
+    }
+
+
+    function admin()
+    {
+        return $this->belongsTo(Admin::class, 'admin_id','id');
     }
     
     

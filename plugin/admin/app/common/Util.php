@@ -2,6 +2,7 @@
 
 namespace plugin\admin\app\common;
 
+use plugin\admin\app\model\Admin;
 use process\Monitor;
 use Throwable;
 use Illuminate\Database\Connection;
@@ -14,6 +15,18 @@ use Workerman\Worker;
 
 class Util
 {
+
+    /**
+     * 生成管理员邀请码
+     * @return string
+     */
+    public static function generateAdminInvitecode()
+    {
+        do {
+            $invitecode = self::alnum();
+        } while (Admin::where(['invitecode' => $invitecode])->first());
+        return $invitecode;
+    }
 
     /**
      * 生成数字和字母

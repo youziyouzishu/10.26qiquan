@@ -3,6 +3,7 @@
 namespace plugin\admin\app\controller;
 
 use plugin\admin\app\common\Auth;
+use plugin\admin\app\common\Util;
 use plugin\admin\app\model\Admin;
 use plugin\admin\app\model\AdminRole;
 use support\exception\BusinessException;
@@ -96,9 +97,6 @@ class AdminController extends Crud
     public function insert(Request $request): Response
     {
         if ($request->method() === 'POST') {
-            $data = $this->insertInput($request);
-            unset($data['id']);
-            $admin_id = $this->doInsert($data);
             $role_ids = $request->post('roles');
             $role_ids = $role_ids ? explode(',', $role_ids) : [];
             if (!$role_ids) {
@@ -107,6 +105,16 @@ class AdminController extends Crud
             if (!Auth::isSuperAdmin() && array_diff($role_ids, Auth::getScopeRoleIds())) {
                 return $this->json(1, '角色超出权限范围');
             }
+            if (in_array(4,$role_ids)){
+                $request->setParams('post',[
+                    'invitecode'=>Util::generateAdminInvitecode(),
+                ]);
+            }
+
+            $data = $this->insertInput($request);
+            unset($data['id']);
+            $admin_id = $this->doInsert($data);
+
             AdminRole::where('admin_id', $admin_id)->delete();
             foreach ($role_ids as $id) {
                 $admin_role = new AdminRole;

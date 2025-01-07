@@ -22,6 +22,7 @@ use plugin\admin\app\model\Base;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Admin newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Admin newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Admin query()
+ * @property string $invitecode 邀请码
  * @mixin \Eloquent
  */
 class Admin extends Base

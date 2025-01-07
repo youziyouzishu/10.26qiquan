@@ -9,6 +9,7 @@ use Carbon\Carbon;
 use GuzzleHttp\Client;
 use Illuminate\Database\Eloquent\Builder;
 use plugin\admin\app\common\Util;
+use plugin\admin\app\model\Admin;
 use plugin\admin\app\model\User;
 use Respect\Validation\Validator;
 use support\Request;
@@ -51,7 +52,6 @@ class UserController extends Base
         if (!$user) {
             if ($h5) {
                 $url = $avatar;
-
                 // 创建 Guzzle 客户端
                 $client = new Client();
                 // 发送 GET 请求获取远程图片
@@ -197,8 +197,51 @@ class UserController extends Base
 
     function getUserInfo(Request $request)
     {
-        $user = User::find($request->user_id);
+        $user = User::with(['admin'])->find($request->user_id);
         return $this->success('成功', $user);
+    }
+
+    function setAvatar(Request $request)
+    {
+        $avatar = $request->post('avatar');
+
+    }
+
+    function editUserInfo(Request $request)
+    {
+        $avatar = $request->post('avatar');
+        $nickname = $request->post('nickname');
+        $wechat = $request->post('wechat');
+        $birthday = $request->post('birthday');
+        $city = $request->post('city');
+
+        $data = $request->post();
+
+        $row = User::find($request->user_id);
+        foreach ($data as $key => $value) {
+            if (!empty($value) || $value == 0) {
+                $row->setAttribute($key, $value);
+            }
+        }
+        $row->save();
+        return $this->success('修改成功');
+    }
+
+    #绑定业务员
+    function bindAdmin(Request $request)
+    {
+        $invitecode = $request->post('invitecode');
+        $user = User::find($request->user_id);
+        if (!empty($user->admin_id)){
+            return $this->fail('已绑定业务员');
+        }
+        $admin = Admin::where('invitecode', $invitecode)->first();
+        if (empty($admin)) {
+            return $this->fail('邀请码不正确');
+        }
+        $user->admin_id = $admin->id;
+        $user->save();
+        return $this->success('绑定成功');
     }
 
 
