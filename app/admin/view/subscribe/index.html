@@ -13,11 +13,11 @@
         <div class="layui-card">
             <div class="layui-card-body">
                 <form class="layui-form top-search-from">
-                    
+
                     <div class="layui-form-item">
-                        <label class="layui-form-label">主键</label>
+                        <label class="layui-form-label">状态</label>
                         <div class="layui-input-block">
-                            <input type="number" name="id" value="" class="layui-input">
+                            <div name="status" id="status" value="" ></div>
                         </div>
                     </div>
                     
@@ -49,12 +49,7 @@
                         </div>
                     </div>
                     
-                    <div class="layui-form-item">
-                        <label class="layui-form-label">状态</label>
-                        <div class="layui-input-block">
-                            <div name="status" id="status" value="" ></div>
-                        </div>
-                    </div>
+
                     
                     <div class="layui-form-item">
                         <label class="layui-form-label">起始日</label>
@@ -323,6 +318,12 @@
 						title: "合同成本",align: "center",
 						field: "pay_amount",
 					},{
+                        title: "实际成本",align: "center",
+                        field: "actual_cost",
+                    },{
+                        title: "通道费用",align: "center",
+                        field: "access_fee",
+                    },{
 						title: "状态",align: "center",
 						field: "status",
 						templet: function (d) {

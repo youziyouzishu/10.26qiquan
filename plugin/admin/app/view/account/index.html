@@ -35,15 +35,35 @@
                                 </div>
                             </div>
                             <div class="layui-form-item">
-                                <label class="layui-form-label">邮箱</label>
+                                <label class="layui-form-label">微信收款码</label>
                                 <div class="layui-input-block">
-                                    <input type="text" name="email" placeholder="请输入邮箱" autocomplete="off" class="layui-input">
+                                    <img class="img-3" src=""/>
+                                    <input type="text" style="display:none" name="wechatpay" value="" />
+                                    <button type="button" class="pear-btn pear-btn-primary pear-btn-sm" id="wechatpay"  permission="app.admin.upload.image">
+                                        <i class="layui-icon layui-icon-upload"></i>上传图片
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">支付宝收款码</label>
+                                <div class="layui-input-block">
+                                    <img class="img-3" src=""/>
+                                    <input type="text" style="display:none" name="alipay" value="" />
+                                    <button type="button" class="pear-btn pear-btn-primary pear-btn-sm" id="alipay"  permission="app.admin.upload.image">
+                                        <i class="layui-icon layui-icon-upload"></i>上传图片
+                                    </button>
                                 </div>
                             </div>
                             <div class="layui-form-item">
                                 <label class="layui-form-label">联系电话</label>
                                 <div class="layui-input-block">
                                     <input type="text" name="mobile" placeholder="请输入联系电话" autocomplete="off" class="layui-input">
+                                </div>
+                            </div>
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">余额</label>
+                                <div class="layui-input-block">
+                                    <input type="text"  name="money" readonly class="layui-input">
                                 </div>
                             </div>
                             <div class="layui-form-item">
@@ -107,6 +127,36 @@
         <script src="/app/admin/admin/js/permission.js"></script>
         <script>
 
+            layui.use(["upload", "layer"], function() {
+                layui.upload.render({
+                    elem: "#alipay",
+                    value: "",
+                    acceptMime: "image/gif,image/jpeg,image/jpg,image/png",
+                    url: "/app/admin/upload/image",
+                    field: "__file__",
+                    done: function (res) {
+                        if (res.code > 0) return layui.layer.msg(res.msg);
+                        this.item.prev().val(res.data.url).prev().attr("src", res.data.url);
+                    }
+                });
+            });
+
+
+            layui.use(["upload", "layer"], function() {
+                layui.upload.render({
+                    elem: "#wechatpay",
+                    value: "",
+                    acceptMime: "image/gif,image/jpeg,image/jpg,image/png",
+                    url: "/app/admin/upload/image",
+                    field: "__file__",
+                    done: function (res) {
+                        if (res.code > 0) return layui.layer.msg(res.msg);
+                        this.item.prev().val(res.data.url).prev().attr("src", res.data.url);
+                    }
+                });
+            });
+
+
             layui.use(["form", "popup"], function () {
                 let form = layui.form;
                 let $ = layui.$;
@@ -115,8 +165,11 @@
                     dataType: "json",
                     success: function (res) {
                         form.val("baseInfo", res.data);
+                        $("#alipay").prev().val(res.data.alipay).prev().attr("src", res.data.alipay);
+                        $("#wechatpay").prev().val(res.data.wechatpay).prev().attr("src", res.data.wechatpay);
                     }
                 });
+
 
                 form.on("submit(saveBaseInfo)", function(data){
                     $.ajax({

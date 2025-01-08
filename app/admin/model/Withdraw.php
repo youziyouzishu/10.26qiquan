@@ -24,6 +24,9 @@ use plugin\admin\app\model\User;
  * @property int $admin_id 所属管理员
  * @property string $memo 备注
  * @property string|null $check_time 审核时间
+ * @property-read mixed $status_text
+ * @property-read mixed $type_text
+ * @property-read User|null $user
  * @mixin \Eloquent
  */
 class Withdraw extends Base

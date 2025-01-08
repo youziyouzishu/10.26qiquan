@@ -23,7 +23,7 @@ class Util
     public static function generateAdminInvitecode()
     {
         do {
-            $invitecode = self::alnum();
+            $invitecode = self::numeric(6);
         } while (Admin::where(['invitecode' => $invitecode])->first());
         return $invitecode;
     }

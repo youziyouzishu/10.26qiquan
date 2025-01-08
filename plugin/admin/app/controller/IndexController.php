@@ -2,17 +2,18 @@
 
 namespace plugin\admin\app\controller;
 
+use app\admin\model\Subscribe;
+use app\admin\model\Withdraw;
 use plugin\admin\app\common\Util;
 use plugin\admin\app\model\Option;
 use plugin\admin\app\model\User;
 use support\exception\BusinessException;
 use support\Request;
 use support\Response;
-use think\db\Where;
 use Throwable;
 use Workerman\Worker;
 
-class IndexController
+class IndexController extends Base
 {
 
     /**
@@ -25,7 +26,7 @@ class IndexController
      * 不需要鉴权的方法
      * @var string[]
      */
-    protected $noNeedAuth = ['dashboard'];
+    protected $noNeedAuth = ['dashboard','getNotice'];
 
     /**
      * 后台主页
@@ -49,6 +50,20 @@ class IndexController
             return raw_view('account/login',['logo'=>$logo,'title'=>$title]);
         }
         return raw_view('index/index');
+    }
+
+
+    function getNotice(Request $request)
+    {
+        if (in_array(3,admin('roles'))){
+            $withdraw = Withdraw::where(['status'=>0])->count();
+            $subscribe = Subscribe::where(['status'=>0])->count();
+        }else{
+            $withdraw = 0;
+            $subscribe = 0;
+        }
+
+        return $this->success('成功',['withdraw'=>$withdraw,'subscribe'=>$subscribe]);
     }
 
     /**

@@ -106,7 +106,6 @@ class SubscribeController extends Base
         if (!$row) {
             return $this->fail('数据不存在');
         }
-        dump($row);
         $stockinfo = Tool::getStockPrice($row->stock->code);
         $market_price = $stockinfo->p;
         $increase_rate = 0;

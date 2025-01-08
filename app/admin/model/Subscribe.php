@@ -43,6 +43,8 @@ use plugin\admin\app\model\User;
  * @property-read mixed $time_text
  * @property-read mixed $type_text
  * @property-read mixed $status_by
+ * @property string $actual_cost 实际成本
+ * @property string $access_fee 通道费用
  * @mixin \Eloquent
  */
 class Subscribe extends Base

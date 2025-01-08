@@ -21,6 +21,7 @@ use plugin\admin\app\model\User;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|UsersScoreLog newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|UsersScoreLog newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|UsersScoreLog query()
+ * @property-read User|null $user
  * @mixin \Eloquent
  */
 class UsersScoreLog extends Base

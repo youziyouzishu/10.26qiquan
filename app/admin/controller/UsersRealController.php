@@ -1,24 +1,21 @@
 <?php
 
-namespace plugin\admin\app\controller;
+namespace app\admin\controller;
 
-use plugin\admin\app\model\Admin;
-use plugin\admin\app\model\User;
-use support\exception\BusinessException;
 use support\Request;
 use support\Response;
-use Throwable;
+use app\admin\model\UsersReal;
+use plugin\admin\app\controller\Crud;
+use support\exception\BusinessException;
 
 /**
- * 用户管理 
+ * 实名管理 
  */
-class UserController extends Crud
+class UsersRealController extends Crud
 {
-
-    protected $noNeedAuth = ['index','select'];
-
+    
     /**
-     * @var User
+     * @var UsersReal
      */
     protected $model = null;
 
@@ -28,7 +25,7 @@ class UserController extends Crud
      */
     public function __construct()
     {
-        $this->model = new User;
+        $this->model = new UsersReal;
     }
 
     /**
@@ -40,55 +37,55 @@ class UserController extends Crud
     public function select(Request $request): Response
     {
         [$where, $format, $limit, $field, $order] = $this->selectInput($request);
-        if (in_array(5,admin('roles'))){
-            //如果是经销商 可以看到所属业务员客户
-            $servicer = Admin::where('pid',admin_id())->pluck('id');
-            $where['admin_id'] = ['in',$servicer];
-        }
-        if (in_array(4,admin('roles'))){
-            //如果是业务员 可以看到所属业务员客户
-            $where['admin_id'] = ['=',admin_id()];
-        }
-        $query = $this->doSelect($where, $field, $order)->with(['admin']);
+        $query = $this->doSelect($where, $field, $order)->with(['user']);
         return $this->doFormat($query, $format, $limit);
     }
-
+    
     /**
      * 浏览
      * @return Response
-     * @throws Throwable
      */
     public function index(): Response
     {
-        return raw_view('user/index');
+        return view('users-real/index');
     }
 
     /**
      * 插入
      * @param Request $request
      * @return Response
-     * @throws BusinessException|Throwable
+     * @throws BusinessException
      */
     public function insert(Request $request): Response
     {
         if ($request->method() === 'POST') {
             return parent::insert($request);
         }
-        return raw_view('user/insert');
+        return view('users-real/insert');
     }
 
     /**
      * 更新
      * @param Request $request
      * @return Response
-     * @throws BusinessException|Throwable
-     */
+     * @throws BusinessException
+    */
     public function update(Request $request): Response
     {
         if ($request->method() === 'POST') {
+
+            $status = $request->post('status');
+            $id = $request->post('id');
+            $row = $this->model->find($id);
+            if ($status == 1 && $row->status == 0) {
+                //通过
+            }
+            if ($status == 2 && $row->status == 0) {
+                //驳回
+            }
             return parent::update($request);
         }
-        return raw_view('user/update');
+        return view('users-real/update');
     }
 
 }

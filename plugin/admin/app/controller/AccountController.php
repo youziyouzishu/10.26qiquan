@@ -123,6 +123,9 @@ class AccountController extends Crud
             'mobile' => $admin['mobile'],
             'isSuperAdmin' => Auth::isSuperAdmin(),
             'token' => $request->sessionId(),
+            'money'=>$admin['money'],
+            'alipay'=>$admin['alipay'],
+            'wechatpay'=>$admin['wechatpay'],
         ];
         return $this->json(0, 'ok', $info);
     }
@@ -139,6 +142,8 @@ class AccountController extends Crud
             'avatar' => 'avatar',
             'email' => 'email',
             'mobile' => 'mobile',
+            'wechatpay' => 'wechatpay',
+            'alipay' => 'alipay',
         ];
 
         $data = $request->post();

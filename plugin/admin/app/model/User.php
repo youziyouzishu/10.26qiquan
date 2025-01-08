@@ -2,6 +2,7 @@
 
 namespace plugin\admin\app\model;
 
+use app\admin\model\UsersReal;
 use app\admin\model\UsersScoreLog;
 use plugin\admin\app\model\Base;
 use support\Db;
@@ -38,6 +39,7 @@ use support\Db;
  * @property string $unionid 开放平台统一标识
  * @property int $admin_id 所属管理员ID
  * @property-read \plugin\admin\app\model\Admin|null $admin
+ * @property-read UsersReal|null $real
  * @mixin \Eloquent
  */
 class User extends Base
@@ -93,6 +95,11 @@ class User extends Base
     function admin()
     {
         return $this->belongsTo(Admin::class, 'admin_id','id');
+    }
+
+    function real()
+    {
+        return $this->hasOne(UsersReal::class, 'user_id','id')->where(['status'=>1]);
     }
     
     

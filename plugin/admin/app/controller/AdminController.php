@@ -66,6 +66,7 @@ class AdminController extends Crud
      */
     public function select(Request $request): Response
     {
+
         [$where, $format, $limit, $field, $order] = $this->selectInput($request);
         $query = $this->doSelect($where, $field, $order);
         if ($format === 'select') {
@@ -105,10 +106,20 @@ class AdminController extends Crud
             if (!Auth::isSuperAdmin() && array_diff($role_ids, Auth::getScopeRoleIds())) {
                 return $this->json(1, '角色超出权限范围');
             }
+            # 业务员
             if (in_array(4,$role_ids)){
+                if (!in_array(5,admin('roles'))){
+                    return $this->fail('只能经销商创建业务员');
+                }
                 $request->setParams('post',[
                     'invitecode'=>Util::generateAdminInvitecode(),
+                    'pid'=>admin_id()
                 ]);
+                $admin = Admin::find(admin_id());#经销商
+                if ($request->post('rate') > $admin->rate){
+                    return $this->fail('业务员分佣不能高于经销商');
+                }
+
             }
 
             $data = $this->insertInput($request);

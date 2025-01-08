@@ -3,6 +3,7 @@
 namespace app\api\controller;
 
 use app\admin\model\Sms;
+use app\admin\model\UsersReal;
 use app\admin\model\Withdraw;
 use app\api\basic\Base;
 use Carbon\Carbon;
@@ -175,7 +176,7 @@ class UserController extends Base
             'amount' => $amount,
             'image' => $image,
             'type' => $type,
-            'memo'=>$type == 0 ? '入金' : '出金',
+            'memo' => $type == 0 ? '入金' : '出金',
         ];
         if (!empty($day)) {
             $data['day'] = $day;
@@ -232,7 +233,7 @@ class UserController extends Base
     {
         $invitecode = $request->post('invitecode');
         $user = User::find($request->user_id);
-        if (!empty($user->admin_id)){
+        if (!empty($user->admin_id)) {
             return $this->fail('已绑定业务员');
         }
         $admin = Admin::where('invitecode', $invitecode)->first();
@@ -243,6 +244,51 @@ class UserController extends Base
         $user->save();
         return $this->success('绑定成功');
     }
+
+    #实名认证
+    function real(Request $request)
+    {
+        $name = $request->post('name');
+        $mobile = $request->post('mobile');
+        $id_num = $request->post('id_num');
+        $bankcard = $request->post('bankcard');
+        $bankname = $request->post('bankname');
+        $open_bank = $request->post('open_bank');
+        $id_front = $request->post('id_front');
+        $id_back = $request->post('id_back');
+
+        $real = UsersReal::where('user_id', $request->user_id)->whereIn('status', [0, 1])->first();
+        if ($real) {
+            return $this->fail('请勿重复提交');
+        }
+        UsersReal::create([
+            'user_id' => $request->user_id,
+            'name' => $name,
+            'mobile' => $mobile,
+            'id_num' => $id_num,
+            'bankcard' => $bankcard,
+            'bankname' => $bankname,
+            'open_bank' => $open_bank,
+            'id_front' => $id_front,
+            'id_back' => $id_back,
+        ]);
+        return $this->success('提交成功');
+    }
+
+    function getRealList(Request $request)
+    {
+        $rows = UsersReal::where('user_id', $request->user_id)->orderByDesc('id')->get();
+        return $this->success('成功', $rows);
+    }
+
+    function getRealDetail(Request $request)
+    {
+        $real_id = $request->post('real_id');
+        $row = UsersReal::find($real_id);
+        return $this->success('成功', $row);
+    }
+
+
 
 
 }
