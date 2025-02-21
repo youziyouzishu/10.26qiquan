@@ -198,7 +198,7 @@ class UserController extends Base
 
     function getUserInfo(Request $request)
     {
-        $user = User::with(['admin'])->find($request->user_id);
+        $user = User::with(['admin','real'])->find($request->user_id);
         return $this->success('成功', $user);
     }
 

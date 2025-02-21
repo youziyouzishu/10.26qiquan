@@ -30,7 +30,7 @@ class StockController extends Base
         $rows = StockStructureTime::with(['structure.stock'])->where(['type' => 1])->orderByDesc('weigh')->paginate()->items();
         return $this->success('成功', $rows);
     }
-    
+
     function getStockByKeyWord(Request $request)
     {
         $keyword = $request->post('keyword');
@@ -43,7 +43,7 @@ class StockController extends Base
     function inquiryPprice(Request $request)
     {
         $stock_id = $request->post('stock_id');
-        $time = $request->post('time',''); #期限:0=1个月,1=2个月,2=3个月,3=六个月
+        $time = $request->post('time', ''); #期限:0=1个月,1=2个月,2=3个月,3=六个月
         $structure = $request->post('structure');#结构:0=100call
         $broker = $request->post('broker');#报价方 0=中信
         $time = explode(',', $time);
@@ -53,7 +53,7 @@ class StockController extends Base
 
         $stock = Stock::with(['structure' => function (HasMany $many) use ($structure, $time, $broker) {
             $many->with(['time' => function (HasMany $many) use ($time, $broker) {
-                $many->when(!empty($time),function ($query)use($time){
+                $many->when(!empty($time), function ($query) use ($time) {
                     $query->whereIn('type', $time);
                 })->when(!empty($broker) || $broker == 0, function (Builder $query) use ($broker) {
                     $query->whereIn('broker', $broker);
@@ -74,11 +74,11 @@ class StockController extends Base
         $structure = $request->post('structure');#结构:0=100call
         $broker = $request->post('broker');#报价方 0=中信
         $h5 = $request->isTerminal('h5');
-        if ($h5){
+        if ($h5) {
             // 使用构建器创建 QR Code
             $writer = new PngWriter();
             $qrCode = new QrCode(
-                data: 'https://1026qiquan.62.hzgqapp.com/web/index.html',
+                data: 'https://shutz.top/web/index.html',
                 encoding: new Encoding('UTF-8'),
                 errorCorrectionLevel: ErrorCorrectionLevel::Low,
                 size: 100,
@@ -88,8 +88,7 @@ class StockController extends Base
                 backgroundColor: new Color(255, 255, 255)
             );
             $base64 = $writer->write($qrCode)->getDataUri();
-        }else{
-
+        } else {
             try {
                 $app = new Application(config('wechatmini'));
                 $data = [
@@ -99,7 +98,7 @@ class StockController extends Base
                     'check_path' => !config('app.debug'),
                 ];
                 $response = $app->getClient()->postJson('/wxa/getwxacodeunlimit', $data);
-                $base64 = "data:image/png;base64,".base64_encode($response->getContent());
+                $base64 = "data:image/png;base64," . base64_encode($response->getContent());
             } catch (\Throwable $e) {
                 // 失败
                 return $this->fail($e->getMessage());
@@ -110,23 +109,23 @@ class StockController extends Base
         $getTypeByStockStructure = (new StockStructure)->getTypeList();
         $arr_structure = explode(',', $structure);
         $string_structure = [];
-        foreach ($arr_structure as $v){
+        foreach ($arr_structure as $v) {
             $string_structure[] = $getTypeByStockStructure[$v];
         }
         $getTypeByStockStructureTime = (new StockStructureTime)->getTypeList();
 
-        $arr_time = empty($time)?[]:explode(',', $time);
+        $arr_time = empty($time) ? [] : explode(',', $time);
 
         $string_time = [];
 
-        foreach ($arr_time as $v){
+        foreach ($arr_time as $v) {
             $string_time[] = $getTypeByStockStructureTime[$v];
         }
 
         $getBorkerByStockStructureTime = (new StockStructureTime)->getBrokerList();
         $arr_broker = explode(',', $broker);
         $string_broker = [];
-        foreach ($arr_broker as $v){
+        foreach ($arr_broker as $v) {
             $string_broker[] = $getBorkerByStockStructureTime[$v];
         }
 
@@ -139,26 +138,19 @@ class StockController extends Base
             'code' => $stock->code . '.' . $stock->bourse,
             'type' => '香草期权',
             'structure' => implode('|', $string_structure),
-            'time' => empty($string_time)?'无':implode('|', $string_time),
+            'time' => empty($string_time) ? '无' : implode('|', $string_time),
             'broker' => implode('|', $string_broker),
             'uri' => $base64
         ];
 
-        if ($type == 1){
+        if ($type == 1) {
             //分享报价
-            $structure = StockStructure::where('stock_id',$stock->id)->where('type', $structure)->first();
-            $time = StockStructureTime::where('structure_id', $structure->id)->where('type',$time)->first();
+            $structure = StockStructure::where('stock_id', $stock->id)->where('type', $structure)->first();
+            $time = StockStructureTime::where('structure_id', $structure->id)->where('type', $time)->first();
             $data['price'] = $time->price;
         }
         return $this->success('成功', $data);
     }
-
-
-
-
-
-
-
 
 
 }

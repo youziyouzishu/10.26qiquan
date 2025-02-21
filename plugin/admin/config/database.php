@@ -4,11 +4,11 @@ return  [
     'connections' => [
         'mysql' => [
             'driver'      => 'mysql',
-            'host'        => '122.114.74.62',
+            'host'        => '122.114.237.95',
             'port'        => '3306',
-            'database'    => '1026qiquan_62_hz',
-            'username'    => '1026qiquan_62_hz',
-            'password'    => 'eNhNninaYmM9',
+            'database'    => 'shutz_top',
+            'username'    => 'shutz_top',
+            'password'    => 'jeiJAh8t3iE6CfES',
             'charset'     => 'utf8mb4',
             'collation'   => 'utf8mb4_general_ci',
             'prefix'      => '',

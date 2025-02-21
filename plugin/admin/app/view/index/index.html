@@ -37,6 +37,7 @@
                 <div id="control" class="layui-layout-control"></div>
                 <!-- 顶 部 右 侧 菜 单 -->
                 <ul class="layui-nav layui-layout-right">
+                    <li class="layui-nav-item layui-hide-xs"><a href="#" class="layui-icon layui-icon-notice"><span id="notice" class="layui-badge"></span></a></li>
                     <li class="layui-nav-item layui-hide-xs"><a href="#" class="menuSearch layui-icon layui-icon-search"></a></li>
                     <li class="layui-nav-item layui-hide-xs"><a href="#" class="fullScreen layui-icon layui-icon-screen-full"></a></li>
                     <li class="layui-nav-item layui-hide-xs message"></li>
@@ -113,6 +114,27 @@
                 var popup = layui.popup;
                 var toast = layui.toast;
                 var audio = document.getElementById('notificationSound');
+                $.ajax({
+                    url: '/app/admin/index/getNotice', // 替换为你的轮询URL
+                    type: 'GET',
+                    dataType: 'json',
+                    success: function(response) {
+                        let withdraw_count = response.data.withdraw;
+                        let subscribe_count = response.data.subscribe;
+                        let count = withdraw_count + subscribe_count;
+                        // 更新角标值
+                        $('#notice').text(count);
+
+
+                    },
+
+                    error: function(xhr, status, error) {
+                        console.error('Error fetching data:', error);
+                    }
+                });
+
+
+
                 setInterval(function (){
                     $.ajax({
                         url: '/app/admin/index/getNotice', // 替换为你的轮询URL
@@ -121,23 +143,18 @@
                         success: function(response) {
                             let withdraw_count = response.data.withdraw;
                             let subscribe_count = response.data.subscribe;
-                            if (withdraw_count !== 0 && subscribe_count !== 0){
-                                let text = '你有未处理的出入金记录' + withdraw_count + '条和未处理的认购记录' + subscribe_count + '条';
-                                toast.warning({
-                                    title: '',
-                                    message: text,
-                                    position: 'topCenter'
-                                });
-                                // 播放音效
-                                audio.play();
-                            }
+                            let count = withdraw_count + subscribe_count;
+                            // 更新角标值
+                            $('#notice').text(count);
+
+
                         },
 
                         error: function(xhr, status, error) {
                             console.error('Error fetching data:', error);
                         }
                     });
-                }, 20000);
+                }, 5000);
 
                 admin.setConfigType("json");
                 admin.setConfigPath("/app/admin/config/get");

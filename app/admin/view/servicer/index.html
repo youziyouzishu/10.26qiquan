@@ -13,11 +13,26 @@
         <div class="layui-card">
             <div class="layui-card-body">
                 <form class="layui-form top-search-from">
-                    
+
                     <div class="layui-form-item">
-                        <label class="layui-form-label">主键</label>
+                        <label class="layui-form-label">用户名</label>
                         <div class="layui-input-block">
-                            <input type="number" name="id" value="" class="layui-input">
+                            <input type="text" name="username" value="" class="layui-input">
+                        </div>
+                    </div>
+
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">昵称</label>
+                        <div class="layui-input-block">
+                            <input type="text" name="nickname" value="" class="layui-input">
+                        </div>
+                    </div>
+
+
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">手机</label>
+                        <div class="layui-input-block">
+                            <input type="text" name="mobile" value="" class="layui-input">
                         </div>
                     </div>
                     
@@ -58,7 +73,7 @@
 
         <!-- 表格顶部工具栏 -->
         <script type="text/html" id="table-toolbar">
-            <button class="pear-btn pear-btn-primary pear-btn-md" lay-event="add" permission="admin.servicer.insert">
+            <button class="pear-btn pear-btn-primary pear-btn-md {{ {$guanliyuan} === 1 ?  'layui-hide' : ''}}" lay-event="add" permission="admin.servicer.insert">
                 <i class="layui-icon layui-icon-add-1"></i>新增业务员
             </button>
             <button class="pear-btn pear-btn-danger pear-btn-md" lay-event="batchRemove" permission="admin.servicer.delete">
@@ -69,7 +84,7 @@
         <!-- 表格行工具栏 -->
         <script type="text/html" id="table-bar">
             <button class="pear-btn pear-btn-xs tool-btn" lay-event="userlist" permission="admin.servicer.userlist">客户列表</button>
-            <button class="pear-btn pear-btn-xs tool-btn" lay-event="edit" permission="admin.servicer.update">编辑</button>
+            <button class="pear-btn pear-btn-xs tool-btn {{ {$guanliyuan} === 1 ?  'layui-hide' : ''}}" lay-event="edit" permission="admin.servicer.update">编辑</button>
             <button class="pear-btn pear-btn-xs tool-btn" lay-event="remove" permission="admin.servicer.delete">删除</button>
         </script>
 
@@ -115,6 +130,7 @@
 						title: "主键",align: "center",
 						field: "id",
 						sort: true,
+                        hide:true,
 					},{
                         title: "用户名",align: "center",
                         field: "username",

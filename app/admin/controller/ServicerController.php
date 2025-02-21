@@ -57,7 +57,12 @@ class ServicerController extends Crud
      */
     public function index(): Response
     {
-        return view('servicer/index');
+        if (in_array(3,admin('roles'))){
+            $guanliyuan = 1;
+        }else{
+            $guanliyuan = 0;
+        }
+        return view('servicer/index',['guanliyuan'=>$guanliyuan]);
     }
 
     /**
