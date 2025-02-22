@@ -21,6 +21,8 @@ use plugin\admin\app\model\Base;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|AdminWithdraw newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|AdminWithdraw newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|AdminWithdraw query()
+ * @property string $alipay 支付宝收款码
+ * @property string $wechatpay 微信收款码
  * @mixin \Eloquent
  */
 class AdminWithdraw extends Base
