@@ -6,6 +6,7 @@ use GuzzleHttp\Client;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use plugin\admin\app\common\Util;
 use plugin\admin\app\model\Base;
+use support\Log;
 
 
 /**
@@ -92,27 +93,34 @@ class Sms extends Base
             'code' => $code,
         ];
         try {
-            // 发送 POST 请求
-            $response = $client->post($url, [
-                'headers' => [
-                    'Content-Type' => 'application/json'
-                ],
+            // 发送异步 POST 请求
+            $promise = $client->postAsync($url, [
                 'json' => $data
             ]);
-            // 获取响应体
-            $ret = $response->getBody()->getContents();
-            $ret = json_decode($ret);
-            if ($ret->code != 1) {
-                return false;
-            }
-            self::create([
-                'event' => $event,
-                'mobile' => $mobile,
-                'code' => $code,
-                'ip' => $ip
-            ]);
+            // 处理响应
+            $promise->then(
+                function ($response) use ($event, $mobile, $code, $ip) {
+                    $response = $response->getBody()->getContents();
+                    $response = json_decode($response);
+                    if ($response->code != 1) {
+                        throw new \Exception($response->msg);
+                    }
+                    self::create([
+                        'event' => $event,
+                        'mobile' => $mobile,
+                        'code' => $code,
+                        'ip' => $ip
+                    ]);
+                },
+                function ($exception) {
+                    throw new \Exception($exception->getMessage());
+                }
+            );
+            // 等待所有异步请求完成
+            \GuzzleHttp\Promise\Utils::settle([$promise])->wait();
             return true;
         } catch (\Throwable $e) {
+            Log::info('短信警告：' . $e->getMessage());
             return false;
         }
     }

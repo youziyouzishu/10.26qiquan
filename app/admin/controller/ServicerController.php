@@ -87,7 +87,7 @@ class ServicerController extends Crud
             }
             $data = $this->insertInput($request);
             $admin_id = $this->doInsert($data);
-            AdminRole::where('admin_id', $admin_id)->delete();
+//            AdminRole::where('admin_id', $admin_id)->delete();
             $admin_role = new AdminRole;
             $admin_role->admin_id = $admin_id;
             $admin_role->role_id = 4;

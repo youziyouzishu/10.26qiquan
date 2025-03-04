@@ -10,7 +10,7 @@ use support\Request;
 
 class MarketController extends Base
 {
-    protected $noNeedLogin = ['grailindex','upStock','downStock','stockDetail','searchStock'];
+    protected $noNeedLogin = ['grailindex','upStock','downStock','searchStock'];
     function grailindex()
     {
         $response = (new Client())->get('https://mogen.yingzaihushen.com/api/index/grailindex')->getBody()->getContents();
@@ -37,10 +37,12 @@ class MarketController extends Base
 
     function stockDetail(Request $request)
     {
-        $stock_code = $request->post('stock_code','bj838924');
+        $stock_code = $request->post('stock_code');
         $response = (new Client())->get("https://mogen.yingzaihushen.com/api/Mobile/stockDetail_tobuy?stock_code=$stock_code")->getBody()->getContents();
         $response = json_decode($response);
         $response = $response->list;
+        $response->choose_status = UsersChoose::where(['user_id'=>$request->user_id,'stock_code'=>$stock_code])->exists();
+
         return $this->success('成功',$response);
     }
 
@@ -71,12 +73,14 @@ class MarketController extends Base
             $response = $response->list;
             $row->setAttribute('increPer',$response->increPer);
             $row->setAttribute('nowPri',$response->nowPri);
+            $row->setAttribute('stock_name',$response->name);
         }
+        return $this->success('成功',$rows);
     }
 
     function searchStock(Request $request)
     {
-        $keyword = $request->post('keyword','838');
+        $keyword = $request->post('keyword');
         $response = (new Client())->post("https://mogen.yingzaihushen.com/api/mobile/search_stock_api",[
             'json'=>[
                 'content'=>$keyword

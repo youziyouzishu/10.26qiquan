@@ -66,10 +66,18 @@ class AgentController extends Crud
             if (!in_array(3, admin('roles'))) {
                 return $this->fail('只有管理员可以添加经销商');
             }
-            if ($rate > 100){
-                return $this->fail('佣金比例不能超过100%');
+            if ( $rate > 100 || $rate < 0){
+                return $this->fail('佣金比例0-100');
             }
-            return parent::insert($request);
+            $data = $this->insertInput($request);
+            $admin_id = $this->doInsert($data);
+//            AdminRole::where('admin_id', $admin_id)->delete();
+            $admin_role = new AdminRole;
+            $admin_role->admin_id = $admin_id;
+            $admin_role->role_id = 5;
+            $admin_role->save();
+
+            return $this->success('ok', ['id' => $admin_id]);
         }
         return view('agent/insert');
     }
