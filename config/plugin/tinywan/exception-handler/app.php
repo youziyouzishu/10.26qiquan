@@ -17,7 +17,6 @@ return [
             Tinywan\ExceptionHandler\Exception\ServerErrorHttpException::class,
             Tinywan\Validate\Exception\ValidateException::class,
             Tinywan\Jwt\Exception\JwtTokenException::class,
-            Tinywan\Jwt\Exception\JwtTokenExpiredException::class
         ],
         // 自定义HTTP状态码
         'status' => [
