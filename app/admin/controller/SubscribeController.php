@@ -87,7 +87,7 @@ class SubscribeController extends Crud
                 return $this->fail('用户不存在');
             }
             if ($user->money < $time->price) {
-                return $this->fail('余额不足');
+                return $this->fail('该用户余额不足');
             }
             User::score(-$time->price, $user->id, '认购' . $time->structure->stock->name . '/' . $time->structure->stock->code . '/' . $time->structure->type_text, 'money');
 

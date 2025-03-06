@@ -134,8 +134,6 @@ class UserController extends Base
         $row = User::find($request->user_id);
         $row->mobile = $mobile;
         $row->save();
-
-
         return $this->success('成功');
     }
 

@@ -176,7 +176,7 @@
                             url: "/admin/stock/select?format=normal",
                             dataType: "json",
                             data: {
-                                name: val
+                                code: ['like',val]
                             },
                             success: function (res) {
                                 //回调需要两个参数, 第一个: 数据数组, 第二个: 总页码
@@ -241,7 +241,7 @@
                                 var data = res.data
                                 xmSelect.render({
                                     el: '#district',
-                                    name: 'district',
+                                    name: 'time_id',
                                     filterable: true,
                                     clickClose: true,
                                     radio: true,
