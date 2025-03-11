@@ -124,8 +124,9 @@
                         let count = withdraw_count + subscribe_count;
                         // 更新角标值
                         $('#notice').text(count);
-
-
+                        if (count > 0) {
+                            audio.play();
+                        }
                     },
 
                     error: function(xhr, status, error) {

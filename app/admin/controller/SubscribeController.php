@@ -95,6 +95,7 @@ class SubscribeController extends Crud
             if ($time->structure->type == 0) {
                 $scale_amount = 1000000;
             }
+
             $request->setParams('post', [
                 'stock_id' => $time->structure->stock_id,
                 'structure' => $time->structure->type,
@@ -120,6 +121,7 @@ class SubscribeController extends Crud
             $row = $this->model->find($id);
             $status = $request->post('status');
             $yield_amount = $request->post('yield_amount');
+            $access_fee = $request->post('access_fee');
 
             if ($row->status == 6 && $status == 4) {
                 //行权成功->完结
@@ -148,6 +150,18 @@ class SubscribeController extends Crud
             }
             if ($row->status == 0 && $status == 1) {
                 //认购中->认购成功
+
+                $user = User::find($row->user_id);
+                if (!$user) {
+                    return $this->fail('用户不存在');
+                }
+                if ($user->money < $access_fee) {
+                    return $this->fail('该用户余额不足');
+                }
+
+                User::score(-$access_fee, $user->id, '认购' . $row->stock->name . '/' . $row->stock->code . '/' . $row->type_text.'/'.'通道费', 'money');
+
+
                 if ($row->time == 0) {
                     $month = 1;
                 } elseif ($row->time == 1) {
@@ -175,6 +189,12 @@ class SubscribeController extends Crud
                     'end_time' => $end_time->toDateString()
                 ]);
             }
+
+            if ($row->status == 0 && $status == 2){
+                //认购失败 返回认购金额
+                User::score($row->pay_amount, $row->user_id, '认购失败退款', 'money');
+            }
+
             if ($row->status == 8 && $status == 1) {
                 #申请撤销行权->认购成功
                 $request->setParams('post', [

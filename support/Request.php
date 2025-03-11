@@ -31,19 +31,18 @@ class Request extends \Webman\Http\Request
     function setParams(string $method, array $data)
     {
         $method = strtolower($method);
-        if (!isset($this->_data[$method])) {
+        if (!isset($this->data[$method])) {
             if ($method == 'post'){
                 $this->parsePost();
             }
             if ($method == 'get'){
                 $this->parseGet();
             }
-
         }
-        $rawData = $this->_data ?: [];// 获取原数据
+        $rawData = $this->data ?: [];// 获取原数据
         $newData = $rawData; // 复制原始数据
         $newData[$method] = array_merge($newData[$method] ?? [], $data); // 合并特定方法的数据
-        $this->_data = $newData; // 更新对象数据
+        $this->data = $newData; // 更新对象数据
     }
 
 

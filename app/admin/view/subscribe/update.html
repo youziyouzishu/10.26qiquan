@@ -112,17 +112,17 @@
 
 
 
-                    <div class="layui-form-item ">
+                    <div class="layui-form-item actual_cost">
                         <label class="layui-form-label">实际成本</label>
                         <div class="layui-input-block">
-                            <input type="text" name="actual_cost" value="" class="layui-input">
+                            <input type="text" id="actual_cost" name="actual_cost" value="" class="layui-input">
                         </div>
                     </div>
 
-                    <div class="layui-form-item ">
+                    <div class="layui-form-item access_fee">
                         <label class="layui-form-label">通道费用</label>
                         <div class="layui-input-block">
-                            <input type="text" name="access_fee" value="" class="layui-input">
+                            <input type="text" id="access_fee" name="access_fee" value="" class="layui-input">
                         </div>
                     </div>
 
@@ -326,8 +326,12 @@
 
                                         //只要认购成功 都可以修改买入价格
                                         if (value === "1"){
+                                            $(".actual_cost").removeClass("layui-hide")
+                                            $(".access_fee").removeClass("layui-hide")
                                             $(".price").removeClass("layui-hide")
                                         }else{
+                                            $(".actual_cost").addClass("layui-hide")
+                                            $(".access_fee").addClass("layui-hide")
                                             $(".price").addClass("layui-hide")
                                         }
 
