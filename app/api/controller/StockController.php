@@ -23,7 +23,7 @@ use support\Request;
 class StockController extends Base
 {
 
-    protected $noNeedLogin = ['share'];
+    protected $noNeedLogin = ['share','getList'];
 
     function getList(Request $request)
     {
